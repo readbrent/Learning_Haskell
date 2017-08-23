@@ -31,10 +31,31 @@ getTimestamp (LogMessage Info      timestamp _) = timestamp
 getTimestamp (LogMessage Warning   timestamp _) = timestamp
 getTimestamp (LogMessage (Error _) timestamp _) = timestamp
 
-
 insert :: LogMessage -> MessageTree -> MessageTree
 insert (Unknown _) tree = tree
 insert msg Leaf = Node Leaf msg Leaf
 insert newMessage (Node left currentMessage right)
     | getTimestamp newMessage <= getTimestamp currentMessage = Node (insert newMessage left) currentMessage right
     | otherwise                                              = Node left currentMessage (insert newMessage right)
+
+build :: [LogMessage] -> MessageTree
+build = foldl (flip insert) Leaf
+
+inOrder :: MessageTree -> [LogMessage]
+inOrder Leaf = []
+inOrder (Node left thisMessage right) = (inOrder left) ++ [thisMessage] ++ (inOrder right) 
+
+whatWentWrong :: [LogMessage] -> [String]
+whatWentWrong logList = map getMessage (filter isSevereLog logList)
+    where 
+        isSevereLog ::LogMessage -> Bool
+        isSevereLog (LogMessage (Error n) _ _)
+            | n >= 50 = True
+            | otherwise = False
+        isSevereLog _ = False
+
+        getMessage :: LogMessage -> String
+        getMessage (Unknown message) = message
+        getMessage (LogMessage Info      _ message) = message
+        getMessage (LogMessage Warning   _ message) = message
+        getMessage (LogMessage (Error _) _ message) = message
