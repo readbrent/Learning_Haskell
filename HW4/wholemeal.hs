@@ -29,5 +29,29 @@ foldTree = foldr insert Leaf
                 in Node (treeHeight new_right + 1) left val new_right
 
 treeHeight :: Tree a -> Integer
-treeHeight Leaf = 0
+treeHeight Leaf = -1
 treeHeight (Node height _ _ _) = height
+
+xor :: [Bool] -> Bool
+xor = foldr xor' False
+
+xor' :: Bool -> Bool -> Bool
+xor' True False = True
+xor' False True = True
+xor' _ _ = False
+
+map' :: (a->b) -> [a] -> [b]
+map' f = foldr (\x xs -> f x : xs) []
+
+-- Generates all potential values and then removes the invalid ones.
+sieveSundaram :: Integer -> [Integer]
+sieveSundaram n = let deletionList = invalidList n in
+    2:[2*x + 1 | x <- [1..n], not (x `elem` deletionList)]
+
+-- Generate the numbers that should not be included.
+invalidList :: Integer -> [Integer]
+invalidList n = [i + j + 2*i*j | i <- [1..n], j <- [i..n]]
+
+-- Sample list comprehension.
+cartProd :: [a] -> [b] -> [(a, b)]
+cartProd xs ys = [(x,y) | x <- xs, y <- ys]
