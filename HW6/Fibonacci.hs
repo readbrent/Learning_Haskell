@@ -29,3 +29,23 @@ streamToList (Stream a s) = a : streamToList s
 
 instance Show a => Show (Stream a) where
     show s = "Stream " ++ (show $ take 20 $ streamToList s)
+
+-- Exercise 4
+streamRepeat :: a -> Stream a
+streamRepeat a = Stream a (streamRepeat a)
+
+streamMap :: (a -> b) -> Stream a -> Stream b
+streamMap f (Stream a s) = Stream (f a) (streamMap f s)
+
+streamFromSeed :: (a -> a) -> a -> Stream a
+streamFromSeed f init = Stream init (streamFromSeed f (f init))
+
+-- Exercise 5
+nats :: Stream Integer
+nats = streamFromSeed (+1) 0
+
+interleaveStreams :: Stream a -> Stream a -> Stream a
+interleaveStreams (Stream x xs) ys = Stream x (interleaveStreams ys xs)
+
+ruler :: Stream Integer
+ruler = foldr1 interleaveStreams (map streamRepeat[0..])
