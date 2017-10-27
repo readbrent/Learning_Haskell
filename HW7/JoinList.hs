@@ -16,3 +16,19 @@ tag (Append m _ _) = m
 (+++) Empty a = a
 (+++) a Empty = a
 (+++) a b = Append ((tag a) <> (tag b)) a b
+
+leftSize :: (Sized b, Monoid b) => JoinList b a -> Int
+leftSize Empty = 0
+leftSize x = getSize . size . tag $ x
+
+indexJ :: (Sized b, Monoid b) => Int -> JoinList b a -> Maybe a
+indexJ i _ | i < 0 = Nothing
+indexJ i (Append s _ _) | i >= (getSize . size $ s) = Nothing
+indexJ i (Single s x) | i == 0 = Just x
+
+indexJ i (Append _ left right) = 
+    if i < left_size then indexJ i left
+    else indexJ (i - left_size) right
+    where
+        left_size = leftSize left
+indexJ i _ = Nothing
